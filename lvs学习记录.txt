@@ -1,0 +1,62 @@
+6月18日
+
+集群概念， 
+系统扩展的方式
+scaling up  增强机器 
+scaling out 向外扩展，增加 机器
+
+集群： 组合多个服务器（计算机） 合成的单个系统
+
+Lvs 做请求流量调度，  接收vip（虚拟ip，统一对外ip）， 转发到各个服务器（server IP）
+
+linux cluster 类型
+
+·	负载均衡集群 LB ： load balance
+·	高可用集群 High availibility  高可用 SPOF （single point OF Failure）
+		MTBF : Mean Time Between Failure 平均无故障时间
+		MTTR : Mean Time to Restoration 平均恢复前时间（故障时间）
+		A = MTBF / （MTBF + MTTR） (0,1)之间， 数值越高，可用性越高 （无故障时间占的比例）
+·	高性能集群 HPC ： high performance computing 高性能 （比如计算天气预报）
+
+
+分布式储存：  fastdfs
+
+
+#LB cluster 的实现：
+硬件
+	·	F5 Big——IP
+	·	citrix netscaler
+	·	A10 A10
+软件
+	·	lvs
+	·	ngnix： 支持7层调度
+	·	haproxy : 支持7层调度
+	·	ats ： apache traffic server， yahoo 捐助 
+##基于工作的协议层次划分
+###传输层（通用） 目标端口转换： DPRORT， （DNAT协议？）
+	lvs
+	niginx ： stream
+	haproxy：mode tcp
+###应用层（专用） ： 针对特定协议，自定义的请求模式
+
+
+
+#session 会话保持。 （session 一致性） （负载均衡）
+	·session sticky ： 同一用户调度固定服务器
+		根据IP地址，hash，	（可能因为某些公司 统一客户端Ip（NAT），造成单一服务器负载过大）
+	·session replication： 每台服务器都备份全部session  内网贷款负载
+	·session server： 专门的session 服务器
+		Memcached， Redis
+
+#高可用集群实现方案
+	keepalived：地址漂移 （vrrp协议？）
+
+
+#LVS : 集成在linux内核 ， 
+	VS  virtual server 负责调度
+	RS real server 负责提供服务
+	L4 四层路由交换机
+	
+	工作原理： VS 根据请求报文的目标IP和目标协议以及端口将其调度转发至某RS， 根据调度算法来挑选RS
+
+	访问流程： CIP（客户端ip） 《==》 VIP （vs外网的IP） === DIP （VS内网的IP） 《==》 RIP（Real Server IP）
